@@ -1,382 +1,870 @@
 // gcc filename.cpp -lstdc++ -o main.o
-#include <bits/stdc++.h>
+/*Sushant Suman, Akshat Pandey, Yatharth Agarwal, Purvi Mehnidiratta, Aungan Purohit*/
+//OOPS Project- Hotel Mangement/Booking System
+#include <iostream>
 #include<string.h>
+#include<stdlib.h>
+#include<ctime>
+#include<stdbool.h>
+#include <iomanip>
+#include<fstream>
 using namespace std;
-//base class
-class client
+
+class Exception;
+class Customer;
+class RoomCustomer;
+class Employee;
+class Dish;
+class RestaurantCustomer;
+class Restaurant;
+class Hotel;
+class Room;
+class RoomService;
+
+
+class Exception
 {
-public:
-    //base class data members
-    static int c_id_count;
-    int cost_cnt;
-    char c_type;
-    string gender;
-    //base class member functions
-    //using csv file to store & check the user data
-    //virtual function for polymorphism
-    friend string gender_display();
-    
-
-    virtual void check()
-    {
-        client c;
-        //Here searching if a client has his / her account
-        fstream fin;
-        fin.open("client.csv", ios::in);
-        int target_phn,phn,count = 0;
-        cout << "Enter the phone number of the client to display details: ";
-        cin >> target_phn;
-        //using vector to get a line at a time
-        vector<string> row;
-        string line, word;
-        while (fin >> line) {
-            row.clear();
-            stringstream s(line);
-            //get the data splitting by comma from the line
-            while (getline(s,word,',')) {
-            row.push_back(word);
-            }
-            // c.gender=row[5];
-            
-            //changing the string input to int
-            phn = atoi(row[2].c_str());
-            if (target_phn == phn) {
-                //printing the client data
-                count = 1;
-                cout << "Client ID: " << row[0] << "\n";
-                cout << "Name: " << row[1] << "\n";
-                cout << "Phone No: " << row[2] << "\n";
-                cout << "Address: " << row[3] << "\n";
-                cout << "NID: " << row[4] << "\n";
-                cout << "Gender:" << row[5] << "\n";
-                break;
-            }
-        }
-        //if the client isn't registered
-        if (count == 0)
-            cout << "Record not found\n";
-
-    }
-    // virtual function for polymorphism
-    virtual int update()
-    {
-        fstream fout;
-        //open file to append new client data
-        fout.open("client.csv", ios::out | ios::app);
-        int c_id;
-        //getting the client informations
-        string c_name;
-        string c_phone_no;
-        string c_address;
-        string c_nid;
-        cout<<"Enter Client ID:";cin>>c_id;
-        cout<<endl<<"Enter Client Name:";cin>>c_name;
-        cout<<endl<<"Enter Client Phone No:";cin>>c_phone_no;
-        cout<<endl<<"Enter Client Address:";cin>>c_address;
-        cout<<endl<<"Enter Client NID:";cin>>c_nid;
-        //printing the client details in csv file
-        fout << c_id << ","
-                 << c_name << ","
-                 << c_phone_no << ","
-                 << c_address << ","
-                 << c_nid << "\n";
-        fout.close();
-    
-      return cost_cnt;
-
-    }
-    /*
-    we can also get the informations using constructor
-    client(string c_name,string c_phone_no,string c_address,string c_nid,char c_type)
-    {
-        c_id_count++; c_id=c_id_count;
-        this->c_name=c_name; this->c_phone_no=c_phone_no; this->c_address=c_address; this->c_nid=c_nid; this->c_type=c_type;
-    }
-    */
+	public:
+		int errNo;
+		string msg;
+		
+	public:
+		Exception(int errNo,string msg)
+		{
+			this->errNo=errNo;	
+			this->msg=msg;
+		}
+		
+		void what()
+		{
+			cout<<"\t\t"<< errNo<<" :: "<< msg<<endl;
+		}
 };
 
-string gender_display(client c)
-{
-    
-        cout<<" This is a friend function lmao"<<endl;
 
-        return c.gender;
-   
-}
-//derived class of the base class client
-//virtually iherited client to solve diamond problem
-class client_hotelroom:virtual public client
+class Room
 {
-public:
-    //extented check function to check if a hotel room is vacant
-    void check()
-    {
-        //opening txt file to read
-        ifstream inf("hotelroom.txt");
-        //if the text file is not available
-        if(!inf) cout<<endl<<"Unable to open hotelroom file"<<endl;
-        int room_id; string room_type; string room_book;
-        cout<<endl<<"hotelrooms to book:"<<endl;
-        //reading the whole file to print available hotel rooms
-        while(!inf.eof())
-        {
-            inf>>room_id>>room_type>>room_book;
-            if(room_book=="NULL")
-            cout<<room_id<<" "<<room_type<<endl;
-        }
-        //closing the file
-        inf.close();
-    }
-    //extented update funtion to book a hotel room
-    int update()
-    {
-        //taking the information to book a definite room
-        int target_room_id,c_id;
-        cout<<"Please enter the required room id:";
-        cin>>target_room_id;
-        cout<<"Please enter the client id:";
-        cin>>c_id;
-        //changing the int c_id to string client_id to compare
-        string client_id;
-        stringstream ss;
-        ss << c_id;
-        client_id = ss.str();
-        //opening the text file to read and append
-        ifstream inf("hotelroom.txt");
-        ofstream outf("hotelroom1.txt");
-        if(!inf) cout<<endl<<"Unable to open hotelroom file"<<endl;
-        int room_id; string room_type; string room_book;
-        //taking all the data to book the required room
-        while(!inf.eof())
-        {
-            inf>>room_id>>room_type>>room_book;
-            if(room_id==target_room_id)
-            {
-                //using the base class data member to calculate client's cost
-                cost_cnt+=1000;
-                cout<<room_id<<" "<<room_type<<endl;
-                //updating the room id with client_id to make it booked
-                outf<<room_id<<" "<<room_type<<" "<<client_id<<endl;
-            }
-            else
-            {
-                //if it isn't the required room then simply rewriting it
-                outf<<room_id<<" "<<room_type<<" "<<room_book<<endl;
-            }
-        }
-        //closing the two files to save update
-        outf.close();
-        inf.close();
-        //deleting previous text file then renaming the updated textfile to replace the previous one
-        remove("hotelroom.txt");
-        rename("hotelroom1.txt","hotelroom.txt");
-        //return the cost of the client
-        return cost_cnt;
-    }
+	public:
+		string roomType;
+		int noOfBeds;
+		double rent;
+		int roomNo;
+		int status;
+		
+	public:
+		Room(string roomType,int noOfBeds,double rent,int roomNo )
+		{
+			this->roomType=roomType;
+			this->noOfBeds=noOfBeds;
+			this->rent=rent;
+			this->roomNo=roomNo;
+			this->status=0;
+						
+		}
+		void setRoom()
+		{
+			cout<<"Enter Room Type, No of beds, Rent, RoomNo\n";
+			cin>>this->roomType;
+			cin>>this->noOfBeds;
+			cin>>this->rent;
+			cin>>this->roomNo;
+			status=0;
+			
+		}
+		
+		Room()
+		{
+		}
 
-    //checkout a booked room to make it available again
-    void checkout()
-    {
-        //getting necessary infos and changing to string
-        int c_id;
-        cout<<"Please enter the client id:";
-        cin>>c_id;
-        string client_id;
-        stringstream ss;
-        ss << c_id;
-        client_id = ss.str();
-        //read & write the text file
-        ifstream inf("hotelroom.txt");
-        ofstream outf("hotelroom1.txt");
-        if(!inf) cout<<endl<<"Unable to open hotelroom file"<<endl;
-        int room_id; string room_type; string room_book;
-        //updating the rooms which the client hold to make it available
-        while(true)
-        {
-            inf>>room_id>>room_type>>room_book;
-            if(inf.eof()) break;
-            if(room_book==client_id)
-            {
-                cout<<room_id<<" "<<room_type<<endl;
-                outf<<room_id<<" "<<room_type<<" "<<"NULL"<<endl;
-            }
-            else
-            {
-                outf<<room_id<<" "<<room_type<<" "<<room_book<<endl;
-            }
-        }
-        //closing the file and replacing the previous file
-        outf.close();
-        inf.close();
-        remove("hotelroom.txt");
-        rename("hotelroom1.txt","hotelroom.txt");
-    }
-    //virtual function for polymorphism in derived class cost
-    virtual void display_cost(){};
+		
+		
+		
+		bool isVacant(Room r)
+		{
+			if(r.status==1)
+			return false;
+			else 
+			return true;
+		}
+		
+		void displayDetail()
+		{
+			
+			cout<<"Room Type :: "<<this->roomType<<endl;
+			cout<<"Number of Beds :: "<<this->noOfBeds<<endl;
+			cout<<"Rent :: "<<this->rent<<endl;
+			cout<<"Room Number ::"<<this->roomNo<<endl;
+			if(status==1)
+			cout<<" Occupied \n";
+			else
+			cout<<"Vacant \n";
+		}
+		
+		void vacateRoom(int rno)
+		{
+			int i;
+			for(i=0;i<6;i++)
+			{
+				if(this->roomNo==rno)
+					this->status=0;
+			}
+		}
+		
+		void displayAvailable(Room r[6])
+		{
+			int i;
+			for(i=0;i<6;i++)
+			{
+				if(r[i].status==0)
+				r[i].displayDetail();
+			}
+		}
+		
 };
-//client's derived class to book the convention hall
-class client_conventionhall:virtual public client
+
+class Dish
 {
-    public:
-        //check function to check if the hall is empty in the required time
-    void check()
-    {
-        //opening the text file and taking necessary informations
-        ifstream inf("conventionhall.txt");
-        if(!inf) cout<<endl<<"Unable to open conventionhall file"<<endl;
-        string day,time,hall_book,target_day,target_time,res="Not booked";
-        cout<<endl<<"Please enter the date(Ex: 23/05/2019):";cin>>target_day;
-        cout<<endl<<"Please enter the time(07:00 / 11:00):";cin>>target_time;
-        //If the required time exists then the result(res) will be changed to booked
-        while(!inf.eof())
-        {
-            inf>>day>>time>>hall_book;
-            cout<<day<<" "<<time<<" "<<hall_book<<endl;
-            if(day==target_day && time==target_time) res="booked";
-        }
-        //if any of the previous booking not resembles then it will show not booked and closing the file
-        cout<<endl<<res<<endl;
-        inf.close();
-    }
-    //updating the booking of the convention hall
-    int update()
-    {
-        //taking necessary infos to book a time
-        string target_day,target_time;int c_id;
-        cout<<"Please enter the required date:";
-        cin>>target_day;
-        cout<<"Please enter the required time:";
-        cin>>target_time;
-        cout<<"Please enter the client id:";
-        cin>>c_id;
-        //calculating the cost
-        cost_cnt+=20000;
-        //opening the text file to append and returning the cost
-        ofstream outf("conventionhall.txt",ios::app);
-        outf<<endl<<target_day<<" "<<target_time<<" "<<c_id;
-        outf.close();
-        return cost_cnt;
-    }
-    virtual void display_cost(){};
+	public:
+		string dishName;
+		double price;
+		string dishType;
+		
+	public:
+		Dish(string dishName,double price,string dishType)
+		{
+			this->dishName=dishName;
+			this->price=price;
+			this->dishType=dishType;
+		}
+		Dish()
+		{
+		    
+		}
 };
-//derived class of client to book restaurant
-class client_restaurant:virtual public client
+
+
+
+class Customer
 {
-public:
-    //check if the restaurant is booked or not
-    void check()
-    {
-        //input the necessary infos
-        ifstream inf("restaurant.txt");
-        if(!inf) cout<<endl<<"Unable to open restaurant file"<<endl;
-        string day,time,res_book,target_day,target_time,res="Not booked";
-        cout<<endl<<"Please enter the date(Ex: 23/05/2019):";cin>>target_day;
-        cout<<endl<<"Please enter the time(Ex: 07:00):";cin>>target_time;
-        //comparing with the required time and giving result
-        while(!inf.eof())
-        {
-            inf>>day>>time>>res_book;
-            cout<<day<<" "<<time<<" "<<res_book<<endl;
-            if(day==target_day && time==target_time) res="booked";
-        }
-        cout<<endl<<res<<endl;
-        inf.close();
-    }
-    //booking the restaurant
-    int update()
-    {
-        //taking necessary data
-        string target_day,target_time;int c_id;
-        cout<<"Please enter the required date:";
-        cin>>target_day;
-        cout<<"Please enter the required time:";
-        cin>>target_time;
-        cout<<"Please enter the client id:";
-        cin>>c_id;
-        //cost count
-        cost_cnt+=200;
-        //write the text file and returning cost
-        ofstream outf("restaurant.txt",ios::app);
-        outf<<endl<<target_day<<" "<<target_time<<" "<<c_id;
-        outf.close();
-        return cost_cnt;
-    }
-    virtual void display_cost(){};
+	public:
+		string custName;
+		string custAddress;
+		string custID;
+		long int custPhone;
+		string custEmail;
+		string checkInTime;
+		int status;
+		
+	public:
+		Customer()
+		{
+			time_t c=time(0);
+	        string dt = ctime(&c);
+			this->custName=" ";
+			this->custAddress =" ";
+			this->custID =" ";
+			this->custPhone = 0L;
+			this->custEmail =" ";
+			this->checkInTime = dt;
+			status=0;
+		}
+		
+		void setData()
+		{
+			time_t now=time(0);
+			string dt = ctime(&now);
+			this->checkInTime = dt;
+			ofstream customer;
+			customer.open("Customer.txt",ios::ate);
+			cout<<"Enter your Name :\n";
+			cin>>this->custName;
+			customer << "Name ::"<< this->custName<<"\n";
+			
+			cout<<"Enter your Address :\n";
+			cin>>this->custAddress;
+   			customer<< "Address ::"<< this->custAddress<<"\n";
+			
+			cout<<"Enter your Phone number :\n";
+			cin>>this->custPhone;
+			customer << "Phone ::"<< this->custPhone<<"\n";
+			
+			cout<<"Enter your Email :\n";
+			cin>>this->custEmail;
+			customer << "Email ::"<< this->custEmail<<"\n\n";
+			customer.close();
+			
+		}
+		
+		int selectChoice()
+		{
+			int ch;
+			cout<<" Hello!\n";
+			cout<<"Enter \n1. Accomodation \n 2. Dine\n ";
+			cin>>ch;
+			return ch;
+		}
+		
+	
+		
+		virtual void printCustomer()
+		{
+			cout<<"Name :: "<<this->custName<<endl;
+			cout<<"Address :: "<< this->custAddress<<endl;
+			cout<<"ID :: " <<custID<<endl;
+			cout<<"Phone Number :: "<< custPhone<<endl;
+			cout<<"Email :: "<<custEmail<<endl;
+			cout<<"Check-In Time ::"<<this->checkInTime<<endl;
+			
+ 		} 
+		virtual void viewTotalBill(){
+		}
+		virtual void allocateRoom(Room r1){
+		}
+		virtual void allocateDish(Dish d1){
+		}
+		virtual void checkout(){
+		}
 };
-//derived class of children of the base class, creating diamond problem
-//cost class derived from all the derived class of client
-class cost : public client_conventionhall, public client_hotelroom, public client_restaurant
+
+class RoomCustomer : public Customer
 {
-public:
-    //check and update function for creating polymorphism
-    void check(){}
-    int update(){return 0;} //cant define like this
-    //displaying the total cost of a client
-    //previously declared virtually
-    void display_cost(int cost)
-    {
-        cout<<endl<<"Total cost:"<<cost<<endl;
-        int paid; cout<<endl<<"Paid money:"<<endl; cin>>paid;
-        cout<<endl<<"Recievable change:"<<paid-cost<<endl;
-    }
-    //operator overloading to compute the cost
-    cost operator - (cost c)
-    {
-        cost c3;
-        c3.cost_cnt = c.cost_cnt - this->cost_cnt;
-        return c3;
-    }
+	public:
+		double rbill;
+		Room r;
+		int bookStatus;
+	public:
+		
+		void viewTotalbill()
+		{
+			cout<<"Bill ="<<rbill;
+		}
+		
+		void allocateRoom(Room r1)
+		{
+			this->r=r1;
+		}
+		
+		void printCustomer()
+		{		
+				
+				Customer :: printCustomer();
+				if(r.status==1 && bookStatus==1)
+				
+				{
+				cout<<"Check-In Time :: "<< checkInTime<<endl;
+				cout<<"Room type :: "<<r.roomType<<endl;
+				cout<<"Room Number :: "<<r.roomNo<<endl;
+				
+		}}
+		void viewTotalBill()
+		{
+			this->rbill=r.rent;
+			cout<<"Bill :: "<<this->rbill<<endl;
+		}
+		void checkOut()
+		{
+			cout<<"Your bill is "<<this->rbill<<"/-"<<endl;
+			this->rbill=0;
+			this->r.status=0;
+			cout<<"Thank You! Visit Again.\n"<<endl;
+		}
+		
+			
 };
-//main function
+
+
+class RestaurantCustomer:public Customer
+{
+	public:
+		double dbill;
+		Dish d;
+		int orderStatus;
+	public:
+		
+		void viewTotalbill()
+		{
+			cout<<"Bill ="<<dbill;
+		}
+		
+		 void allocateDish(Dish d1)
+		 {
+		 	this->d=d1;
+		 }
+		void printCustomer()
+		{		
+				
+				Customer :: printCustomer();
+				if(orderStatus )
+				{
+				cout<<"Dish Name :: "<<d.dishName<<endl;
+				cout<<"Dish Type :: "<<d.dishType<<endl;
+				
+				}}
+		void viewTotalBill()
+		{
+			this->dbill=d.price;
+			cout<<"Bill :: "<<this->dbill<<endl;
+		}
+			
+};
+
+
+class Employee
+{
+	
+	public:
+		
+	
+		virtual void performDuty()=0;
+		virtual ~Employee(){
+		}
+};
+
+
+class RoomService:public Employee
+{
+	public:
+		void performDuty()
+		{
+		cout<<"Employee XYZ arriving at your doorstep...\n\n";
+		}
+		
+		virtual ~RoomService(){
+		}
+
+};
+
+class Waiter:public Employee
+{
+	public:
+		void performDuty()
+		{
+			
+			cout<<"\n\nEmployee ABC arriving at your table to take your Order\n\n";
+			
+		}
+		virtual ~Waiter(){
+		}
+};
+
+class SelectEmployee{
+	//protected:
+	Employee *e;
+	
+	public:
+		SelectEmployee(Employee *e1)
+		{
+			e=e1;
+		}
+		
+		void performDuty()
+		{
+			e->performDuty();
+		}
+	
+};
+
+class Restaurant
+{
+	public:
+		Dish dish[8];
+	
+	public:
+		void addDishes()
+		{
+			ofstream menu;
+			menu.open("Menu.txt",ios::ate);
+			int i;
+			for(i=0;i<8;i++)
+			{
+				cout<<i+1<<"] Enter Dish Name Price and Type\n";
+				cin>>dish[i].dishName>>dish[i].price>>dish[i].dishType;
+				menu<< dish[i].dishName<<"\t"<<dish[i].price<<"\t"<<dish[i].dishType<<"\n";
+			}
+			menu.close();
+		}
+		
+		
+			Dish getDish(string dnam)
+			{
+				int i;
+
+				for(i=0;i<8;i++)
+					{
+				
+						if(dish[i].dishName==dnam)	
+						
+						{
+							return dish[i];
+						}
+
+					}
+
+				return dish[0];
+
+			}
+		
+
+
+			void displayDish(Dish d)
+		{
+			cout<<" Dish Name :: "<<d.dishName<<endl;
+			cout<<" Price :: "<<d.price<<endl;
+			cout<<" Dish Type :: "<<d.dishType;
+			
+		}
+		
+		void displayMenu()
+		{
+			int i;
+			for(i=0;i<8;i++)
+			{
+				displayDish(dish[i]);
+			}
+			
+		}
+	
+};
+
+
+
+class Hotel
+{
+	private:
+		static Hotel *instanceHotel;
+		string hotelName;
+		string hotelAddress;
+	public:
+		Employee *employee[5];
+		Restaurant restuarant;
+		
+		Room room[6];
+		Customer *customer[5];
+		
+	private: 
+			
+		
+		Hotel(string hname,string add)
+		{
+			this->hotelName=hname;
+			this->hotelAddress=add;
+		}
+	public:
+		static Hotel* getHotel()
+		{
+			if(!instanceHotel)
+			instanceHotel=new Hotel("UDUPI","HOTEL");
+			return instanceHotel;
+		}
+		
+		void setHotel(Restaurant r,Room rs[6])
+		{
+			int i;
+			
+			for(i=0;i<6;i++)
+			{
+				this->room[i]=rs[i];
+			}
+			for( i=0;i<8;i++)
+			this->restuarant.dish[i]=r.dish[i];
+			
+		}
+		void generateID(Customer *c)
+		{
+			time_t t;
+			static const char m[]="abcdefghijklmnopqrstuvwxyz";
+			int i;
+			
+			for(i=0;i<6;i++)
+			{
+				c->custID=c->custID+ m[rand() % (sizeof(m)- 1)];
+			}
+			
+		}
+		
+		Room getRoom(int rno)
+		{
+			int i;
+			for(i=0;i<6;i++)
+			{
+				if(room[i].roomNo==rno)
+					return room[i];
+				
+				
+			}
+
+			
+			return room[0];
+			
+		}
+	 void displayAvailble(){
+	 	int i;
+	 	cout<<"\n\n----------------------------------------------Room Details----------------------------------------------\n\n";
+	 	cout<<setw(25)<<"Room Type"<<setw(25)<<"Number of Beds"<<setw(25)<<"Rent"<<setw(25)<<"Room Number\n";
+			for(i=0;i<6;i++)
+			{
+				if(room[i].status==0)
+				{
+					cout<<setw(25)<<room[i].roomType;
+					cout<<setw(25)<<room[i].noOfBeds;
+					cout<<setw(25)<<room[i].rent;
+					cout<<setw(25)<<room[i].roomNo<<"\n";
+				}
+			}
+			cout<<"\n\n";
+	 }
+	 
+	 void displayMenu()
+	 {
+	 	cout<<"\n\n-----------------------------------------------Menu-------------------------------------------------\n\n ";
+	 		int i;
+	 		const int width=8;
+	 		cout<<setw(25)<<" Dish Name"<<setw(25)<<"Price"<<setw(25)<<"Dish Type"<<endl;
+			for(i=0;i<8;i++)
+			{
+			
+			cout<<setw(25)<<restuarant.dish[i].dishName;
+			cout<<setw(25)<<restuarant.dish[i].price;
+			cout<<setw(25)<<restuarant.dish[i].dishType<<"\n";
+			}
+	 	cout<<"\n\n";
+	}
+	
+		void bookRoom(int r)
+		{
+			int i;
+			for(i=0;i<6;i++)
+			{
+			if(room[i].roomNo==r)
+		room[i].status=1;}
+		}
+
+		
+		void askFeedback()
+		{
+			int f;
+			string cname;
+			ofstream feedback;
+  			feedback.open ("feedback.txt",ios::app);
+  			feedback <<"Customer Name\t : ";
+			cout<<"Enter your Name\n";
+			cin>>cname;
+			feedback<<cname<<"\t\t\t";
+			cout<<" Thanks for your time! \n How likely are you to recommend Hotel hoteludupi to a Friend or Colleague? \n Rate on a scale of 1-10\n";
+			cin>>f;
+			feedback<<"Feedback\t: ";
+			feedback<<f<<"\n";
+			feedback.close();
+				cout<<" Thanks for your valuable feedback!"<<endl;
+		}
+		
+		void getCustomerData(Customer *c)
+		{
+			cout<<" Name :: "<<c->custName<<endl;
+			cout<<" Address :: "<<c->custAddress<<endl;
+			cout<<" Phone :: "<<c->custPhone <<endl;
+			cout<<" Email :: "<<c->custEmail <<endl;
+			cout<<" Check-In Time:: "<<c->checkInTime <<endl;
+		}
+		
+		 void vacateRoom(int rno)
+		{
+			int i,j=0;
+			for(i=0;i<6;i++)
+			{
+				
+				if(room[i].roomNo==rno)
+			{
+				j=1;
+			room[i].status=0;
+			cout<<"Thank You! Visit Again.\n"<<endl;}
+			}
+				if(j==0)
+				throw Exception(8,"Sorry! Room Not Found, or occupied at the moment\n");
+		
+		}
+		void takeOrder(string dnm)
+		{
+			int i,j=0;;
+			for(i=0;i<8;i++)
+			{
+			if(	restuarant.dish[i].dishName== dnm)
+			{ 
+			j=1;
+			cout<<"Order Successful\n"<<endl;
+			}
+			}
+			if(j==0)
+			throw Exception(9, "Sorry! Dish Not Found, Enter a valid entry");
+		}
+			 
+};
+Hotel *Hotel :: instanceHotel=0;
 int main()
 {
-    //base class pointer and other class objects
-    client *bptr; int t;
-    client c1;
-    client_conventionhall ch1;
-    client_hotelroom h1;
-    client_restaurant r1;
-    cost c2;
-    cout<<gender_display(c1);
-
-    //displaying the options
-    while(true)
-    {
-        //options to create and check client id
-        A:cout<<endl<<"Type 1 to search for a client id"<<endl<<"Type 2 to create a client id"<<endl<<"Type 0 end"<<endl;cin>>t;
-        //base class pointer pointing to a base class object
-        bptr=&c1;
-        //exception handing if gives unnecessary inputs
-        try
-        {
-            if(t==1) bptr->check();
-            else if(t==2) bptr->update();
-            else if (t==0) {}
-            else throw(t);
-        }
-        catch(...)
-        {
-            cout<<endl<<"typed unavailable option"; goto A;
-        }
-        //options to book and checkout
-        B:cout<<endl<<"Type 1 to book a hotelroom"<<endl<<"Type 2 to book convention hall"<<endl<<"Type 3 to reserve restaurant meal"<<endl<<"Type 4 to check out hotel room"<<endl<<"Type 0 to end"<<endl;cin>>t;
-        //exception handing if gives unnecessary inputs
-        try
-        {
-            //base class pointer pointing to derivved class objects
-            //display costs if anything is booked
-            if(t==1) {bptr= &h1;bptr->cost_cnt=0;bptr->check();cout<<endl<<"Type 1 to checkin , Type 0 to not"<<endl;cin>>t;
-            if(t){int i,d;cout<<endl<<"How many rooms do you need?"<<endl;cin>>i;while(i--) d=bptr->update(); c2.display_cost(d);}}
-            else if(t==2) {bptr= &ch1;bptr->cost_cnt=0; bptr->check();cout<<endl<<"Type 1 to book , Type 0 to not"<<endl;cin>>t;if(t) c2.display_cost(bptr->update());}
-            else if(t==3) {bptr= &r1;bptr->cost_cnt=0; bptr->check();cout<<endl<<"Type 1 to book , Type 0 to not"<<endl;cin>>t;if(t) c2.display_cost(bptr->update());}
-            else if(t==4) {h1.checkout();}
-            else if (t==0) {}
-            else throw(t);
-        }
-        catch(...)
-        {
-            cout<<endl<<"typed unavailable option";
-            goto B;
-        }
+	ifstream file("Description.txt");
+		if (file.is_open()) {
+    std::string line;
+    while (std::getline(file, line)) {
+        printf("%s", line.c_str());
     }
+    file.close();
 }
+
+cout<<"\n";
+	int ch,i,o,ch1,ch2,r,rno,rcount=0,dcount=0;
+	Room r2;
+	string dname;
+	Dish d2;
+	Hotel *hoteludupi=hoteludupi->getHotel();
+	
+	Dish d[8]={
+		Dish("Mysore_Masala_Dosa",140,"Main Course"),
+		Dish("Manchow_Soup",110,"Soup"),
+		Dish("Shahi_Paneer",220,"Main Course"),
+		Dish("Ghee_Roast",100,"Beverage"),
+		Dish("Fruit_Salad",180,"Salad"),
+		Dish("Gobhi_Chilli",170,"Starter"),
+		Dish("Filter_Coffee",210,"Beverages"),
+		Dish("Vanilla",120,"Ice Cream")
+			};
+			
+	Customer *c[5];
+	Restaurant res;
+	for(i=0;i<8;i++)
+	{
+		res.dish[i]=d[i];
+	}
+	hoteludupi->restuarant=res;
+	
+	 Room rm[6] = {
+		Room("Deluxe",2,3500,1),
+ 		Room("AC",1,5500,2),
+ 		Room("Non AC",2,2500,3),
+		Room("AC",2,3500,4),
+		Room("Deluxe",2,3500,5),
+	 	Room("Deluxe",3,4500,6)
+		 };
+		 SelectEmployee *e;
+	hoteludupi->setHotel(res,rm);
+	while(1)
+	{
+		for(i=0;i<5;i++)
+		{
+			try{
+			
+	level2:	cout<<"Enter \n\t1. Accomadation\n\t2. Restaurant\n\t3. Exit\n";
+		cin>>ch;
+		if(ch==1)
+		{
+		 hoteludupi->customer[i]=new RoomCustomer;
+		 hoteludupi->generateID(hoteludupi->customer[i]);
+		 cout<<"Enter Your details\n";
+		 hoteludupi->customer[i]->setData();
+		level1:	cout<<"Enter \n\t\t1. To Display Rooms \n\t\t2. To Book a Room \n\t\t3. To Vacate Room \n\t\t4. To Get Invoice  \n\t\t5. Not Satisfied? \n\t\t6. Cancel Booking \n\t\t7. Give Feedback \n\t\t8. Back\n\n";
+			cin>>ch1;
+			switch(ch1)
+			{
+				case 1: hoteludupi->displayAvailble();
+				goto level1;
+				case 2: 
+				if(hoteludupi->customer[i]->status)
+				{
+				cout<<"\n\n-----------------------------------------------------------------------------------------\n\n";
+				throw Exception(1,"Sorry! You Cannot Book more than one room!\n");
+				cout<<"\n\n-----------------------------------------------------------------\n\n";}
+				else
+				{
+				hoteludupi->customer[i]->status=1;
+				hoteludupi->displayAvailble();
+				cout<<"Enter Room No\n";
+				cin>>rno;
+				hoteludupi->bookRoom(rno);
+				r2=hoteludupi->getRoom(rno);
+				hoteludupi->customer[i]->allocateRoom(r2);
+				}
+				
+				goto level1;
+				case 3: 
+				if(!hoteludupi->customer[i]->status)
+				{
+				cout<<"\n\n-----------------------------------------------------------------------------------------\n\n";
+				throw Exception(3,"Cannot vacate a book unless booked\n");
+				cout<<"\n\n-----------------------------------------------------------------\n\n";}
+				
+				else
+				{
+				hoteludupi->customer[i]->status=0;
+				cout<<"Enter Room No\n";
+				cin>>rno;
+				hoteludupi->vacateRoom(rno);
+				cout<<"Room vacated\n";
+			
+				}
+				goto level1;
+				case 4: if(!hoteludupi->customer[i]->status)
+			{
+				cout<<"\n\n------------------------------------------------------------------------------------------\n\n";
+				throw Exception(2,"Cannot get Invoice Details unless you book a Room\n");
+				cout<<"\n\n-----------------------------------------------------------------\n\n";}
+				
+				else 
+				{
+				cout<<"\n\n-----------------------------------------------------------------\n\n";
+				hoteludupi->customer[i]->printCustomer();
+				hoteludupi->customer[i]->viewTotalBill();
+					cout<<"\n\n-----------------------------------------------------------------\n\n";
+				goto level1;}
+				case 5: 
+				if(!hoteludupi->customer[i]->status)
+				
+			{
+			cout<<"\n\n--------------------------------------------------------------------------------------------\n\n";
+				throw Exception(2,"Cannot call Room Service Unless you book a Room\n");
+				cout<<"\n\n-----------------------------------------------------------------\n\n";}
+				
+				else
+				{
+					e=new SelectEmployee(new RoomService);
+					e->performDuty();
+				//hoteludupi->employee->performDuty()
+			}
+					goto level1;
+				case 6: 	if(!hoteludupi->customer[i]->status)
+			 {
+				 	cout<<"\n\n-----------------------------------------------------------------------------------\n\n";
+				throw Exception(2,"No Room Booked\n");
+				}
+				
+				else
+				{
+					
+					hoteludupi->customer[i]->status=0;
+					cout<<"Enter Room No\n";
+				cin>>rno;
+				hoteludupi->vacateRoom(rno);
+					cout<<"Cancellation Successful!\n";
+					
+				}
+				goto level1;
+				case 7: if(!hoteludupi->customer[i]->status)
+			 {
+				 	cout<<"\n\n-----------------------------------------------------------------------------------\n\n";
+				throw Exception(2,"Cannot give feedback unless you order a Dish\n");
+				}
+				else
+
+				hoteludupi->askFeedback();
+				goto level1;
+				case 8: goto level2;
+			}
+			
+		}
+		
+		
+		else if(ch==2)
+		{
+	 	hoteludupi->customer[i]=new RestaurantCustomer;
+		 hoteludupi->generateID(hoteludupi->customer[i]);
+		 cout<<"Enter Your details\n";
+		 hoteludupi->customer[i]->setData();
+	level3:	cout<<"Enter \n\t\t1. To display Menu \n\t\t2. To order a Dish \n\t\t3. To Get Invoice \n\t\t4. To Cancel Order\n\t\t5. Give FeedBack \n\t\t6. Go back\n\n";
+		cin>>ch2;
+		switch(ch2)
+		{
+			case 1:
+				hoteludupi->displayMenu();
+				goto level3;
+			case 2:
+				if(hoteludupi->customer[i]->status)
+			{
+				cout<<"\n\n-----------------------------------------------------------------------------------\n\n";
+				throw Exception(4,"You cannot order more than one dish\n");
+				cout<<"\n\n-----------------------------------------------------------------\n\n";}
+				else
+				{
+					o=1;
+					hoteludupi->customer[i]->status=1;
+			 hoteludupi->displayMenu();
+			 e=new SelectEmployee(new Waiter);
+			 e->performDuty();
+			 cout<<"Enter Dish Name you want to Order(Make sure you enter the exact same name.)\n";
+	
+		cin>>dname;
+			 hoteludupi->takeOrder(dname);
+			 
+			 d2=hoteludupi->restuarant.getDish(dname);
+			
+			hoteludupi->customer[i]->allocateDish(d2);
+		
+			 if(o==0)
+			 {
+			 cout<<"\n\n-----------------------------------------------------------------------------------------\n\n";
+			 throw Exception(6,"No such Dish Found");
+		}
+		
+			 }
+			 	 goto level3;
+			 case 3:
+			 	if(!hoteludupi->customer[i]->status)
+			 {
+				 	cout<<"\n\n-----------------------------------------------------------------------------------\n\n";
+				throw Exception(2,"Cannot get Invoice Details unless you order a Dish\n");
+				}
+				
+				else 
+				{
+				cout<<"\n\n-----------------------------------------------------------------\n\n";
+				hoteludupi->customer[i]->printCustomer();
+				hoteludupi->customer[i]->viewTotalBill();
+					cout<<"\n\n-----------------------------------------------------------------\n\n";
+			}
+				goto level3;
+				case 4: 	if(!hoteludupi->customer[i]->status)
+			 {
+				 	cout<<"\n\n-----------------------------------------------------------------------------------\n\n";
+				throw Exception(2,"No Dish Ordered\n");
+				}
+				else
+				{
+					hoteludupi->customer[i]->status=0;
+					cout<<"Cancelation Successful!\n";
+					
+				}
+				
+			case 5:	if(!hoteludupi->customer[i]->status)
+			 {
+				 	cout<<"\n\n-----------------------------------------------------------------------------------\n\n";
+				throw Exception(2,"Cannot give feedback unless you order a Dish\n");
+				}
+				else
+
+				hoteludupi->askFeedback();
+				goto level1;
+				case 6:
+				goto level2;
+				
+				
+			 
+		}
+		}
+		else if(ch==3)
+		exit(0);
+		else
+		{
+			cout<<"-----------------------------------------------------------------------------------\n\n";
+			throw Exception(5,"INVALID INPUT\n");
+			
+		}
+		goto level2;
+		}
+	
+	catch(Exception eh)
+	{
+		eh.what();
+		cout<<"-----------------------------------------------------------------------------------\n\n";
+	}
+	}	}
+return 0;
+}	
+
